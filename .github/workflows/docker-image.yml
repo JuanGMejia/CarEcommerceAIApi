@@ -30,4 +30,4 @@ jobs:
             with:
               context: .
               push: true
-              tags: yourdockerhubusername/nestjs-api:latest
+              tags: jgmejias/car-ecommerce-api:v1
