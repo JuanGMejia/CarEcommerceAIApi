@@ -30,4 +30,4 @@ jobs:
             with:
               context: .
               push: true
-              tags: jgmejias/car-ecommerce-api:v1
+              tags: jgmejias/car-ecommerce-api:v2
