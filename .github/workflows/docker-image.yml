@@ -37,3 +37,7 @@ jobs:
                 QDRANT_ID=${{ secrets.QDRANT_ID }}
                 QDRANT_URL=${{ secrets.QDRANT_URL }}
                 OPENAI_ID=${{ secrets.OPENAI_ID }}
+                AZURE_STORAGE_CONNECTION=${{ secrets.AZURE_STORAGE_CONNECTION }}
+                BLOB_CONTAINER=${{ secrets.BLOB_CONTAINER }}
+                BLOB_NAME=${{ secrets.BLOB_NAME }}
+                APPINSIGHTS_CONNECTION_STRING=${{ secrets.APPINSIGHTS_CONNECTION_STRING }}

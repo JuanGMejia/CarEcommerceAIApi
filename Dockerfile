@@ -27,6 +27,10 @@ RUN echo "CLIENT_ID=$CLIENT_ID" > .env \
  && echo "QDRANT_ID=$QDRANT_ID" >> .env \
  && echo "QDRANT_URL=$QDRANT_URL" >> .env \
  && echo "OPENAI_ID=$OPENAI_ID" >> .env \
+ && echo "AZURE_STORAGE_CONNECTION=$AZURE_STORAGE_CONNECTION" >> .env \
+ && echo "BLOB_CONTAINER=$BLOB_CONTAINER" >> .env \
+ && echo "BLOB_NAME=$BLOB_NAME" >> .env \
+ && echo "APPINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONNECTION_STRING" >> .env \
  && echo "NODE_ENV=production" >> .env
 
 CMD ["node", "dist/main"]
