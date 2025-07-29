@@ -15,7 +15,14 @@ jobs:
     steps:
           - name: 📥 Checkout code
             uses: actions/checkout@v4
-    
+
+          - name: 🏷 Extract version from package.json
+            shell: bash
+            id: version
+            run: |
+              VERSION=$(node -p "require('./package.json').version")
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+
           - name: 🐳 Set up Docker Buildx
             uses: docker/setup-buildx-action@v2
     
@@ -30,7 +37,7 @@ jobs:
             with:
               context: .
               push: true
-              tags: jgmejias/car-ecommerce-api:v4
+              tags: jgmejias/car-ecommerce-api:${{ steps.version.outputs.VERSION }}
               build-args: |
                 CLIENT_ID=${{ secrets.CLIENT_ID }}
                 TENANT_ID=${{ secrets.TENANT_ID }}
