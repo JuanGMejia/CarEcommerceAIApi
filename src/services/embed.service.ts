@@ -17,30 +17,19 @@ export class EmbedService {
   readonly COLLECTION_NAME = 'Car-Ecommerce';
   constructor(private readonly azureBlobService: AzureBlobService) {}
 
-  async queryToVectorDB(embedding: number[]): Promise<string[]> {
-    try{
-    await this.ensureCollectionExists(); 
-    const result = await this.qdrantClient.search(this.COLLECTION_NAME, {
-      vector: embedding,
-      with_payload: true
-    });
-
-    return result.map(item => item.payload?.text as string ?? '');
-  }
-  catch (error) {
-  throw error;
-  }
-}
+  
 
   async embed() {
-    
+    const openai = new OpenAI({
+        apiKey: process.env.OPENAI_ID, 
+    });
     const containerName = process.env.BLOB_CONTAINER|| ''; 
     const blobName = process.env.BLOB_NAME || '';
-    const fileContent = await this.azureBlobService.downloadFileAsString(containerName, blobName);
+    const fileContent = await this.azureBlobService.downloadFileAsString(containerName, blobName); 
     const chunks = this.splitTextWithOverlap(fileContent);
     const points: { id: number, vector: number[], payload: { text: string } }[] = [];
     for (const chunk of chunks) {
-      const response: number[] = await this.getEmbeddings(chunk);
+      const response: number[] = await this.getEmbeddings(chunk,openai);
       points.push({
         id: points.length + 1,
         vector: response,
@@ -49,16 +38,24 @@ export class EmbedService {
         }
       })
     }
-    await this.ensureCollectionExists(); 
+    await this.ensureCollectionExists();
     await this.uploadToQdrant(points);
   }
-
   async ensureCollectionExists() {
     const collections = await this.qdrantClient.getCollections();
     const exists = collections.collections.some(
       (col: any) => col.name === this.COLLECTION_NAME
     );
-    if (!exists) {
+    if (exists) {
+      await this.qdrantClient.updateCollection(this.COLLECTION_NAME, {
+        vectors: {
+          size: 1536,
+          distance: 'Dot',
+        }
+      });
+    }
+    else 
+    {
       await this.qdrantClient.createCollection(this.COLLECTION_NAME, {
         vectors: {
           size: 1536,
@@ -67,28 +64,35 @@ export class EmbedService {
       });
     }
   }
-
   uploadToQdrant(points: any): Promise<any> {
     return this.qdrantClient.upsert(this.COLLECTION_NAME, { points })
   }
-
-  async getEmbeddings(text: string): Promise<number[]> {
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_ID, 
-    });
-
+  async queryToVectorDB(embedding: number[]): Promise<string[]> {
+      try{
+      //await this.ensureCollectionExists(); 
+      const result = await this.qdrantClient.search(this.COLLECTION_NAME, {
+        vector: embedding,
+        with_payload: true
+      });
+      return result.map(item => item.payload?.text as string ?? '');
+    }
+    catch (error) {
+    throw error;
+    }
+  }
+  
+  async getEmbeddings(text: string, openai:OpenAI): Promise<number[]> {
     const response = await openai.embeddings.create({
-      model: 'text-embedding-ada-002', 
+      model: 'text-embedding-3-small', 
       input: text
     });
-
     return response.data[0].embedding;
   };
 
   splitTextWithOverlap(
     text: string,
     chunkSize: number = 500,
-    overlap: number = 50
+    overlap: number = 80
   ): string[] {
     const chunks: string[] = [];
 

@@ -1,6 +1,5 @@
 import * as appInsights from 'applicationinsights';
 
-// Inicializa Application Insights primero
 if (process.env.APPINSIGHTS_CONNECTION_STRING) {
   appInsights.setup(process.env.APPINSIGHTS_CONNECTION_STRING)
     .setAutoCollectConsole(true, true)
@@ -10,8 +9,7 @@ if (process.env.APPINSIGHTS_CONNECTION_STRING) {
     .setSendLiveMetrics(true)
     .start();
 }
-
-// Luego importa el resto
+export const telemetryClient = appInsights.defaultClient;
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
