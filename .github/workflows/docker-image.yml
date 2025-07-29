@@ -49,14 +49,3 @@ jobs:
                 BLOB_CONTAINER=${{ secrets.BLOB_CONTAINER }}
                 BLOB_NAME=${{ secrets.BLOB_NAME }}
                 APPINSIGHTS_CONNECTION_STRING=${{ secrets.APPINSIGHTS_CONNECTION_STRING }}
-
-          - name: 🔐 Azure Login
-            uses: azure/login@v1
-            with:
-              creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
-          - name: 🚀 Update Web App to use Docker Image
-            uses: azure/webapps-deploy@v2
-            with:
-              app-name: car-ecommerce-api-v
-              images: jgmejias/car-ecommerce-api:${{ steps.version.outputs.VERSION }}
