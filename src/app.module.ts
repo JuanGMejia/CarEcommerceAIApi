@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { EmbedService } from './services/embed.service';
 import { ChatService } from './services/chat.service';
 import { ConfigModule } from '@nestjs/config';
+import { AzureBlobService } from './services/azure-blob.service';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy, EmbedService, ChatService],
+  providers: [AppService, JwtStrategy, EmbedService, ChatService,AzureBlobService],
 })
 export class AppModule { }
