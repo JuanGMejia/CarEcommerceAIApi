@@ -20,7 +20,6 @@ export class AppController {
   @Post('chat')
   @UseGuards(AzureADGuard)
   protected(@Body() info: { message: string }): Observable<{ message: string }> {
-    console.log('Protected route accessed with message:', info.message);
     return from(this.chatService.sendMessageToAgent(info.message)).pipe(
       map(response => ({ message: response })));
   }
