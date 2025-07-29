@@ -4,38 +4,41 @@ import { AzureBlobService } from './azure-blob.service';
 import OpenAI from 'openai';
 import * as fs from 'fs';
 
+
 @Injectable()
 export class EmbedService {
+
   qdrantClient = new QdrantClient({
     url: process.env.QDRANT_URL, // Ensure you have set this environment variable
     apiKey: process.env.QDRANT_ID, // Ensure you have set this environment variable
   });
+  
 
   readonly COLLECTION_NAME = 'Car-Ecommerce';
-
   constructor(private readonly azureBlobService: AzureBlobService) {}
 
   async queryToVectorDB(embedding: number[]): Promise<string[]> {
-    try {
-      await this.ensureCollectionExists();
-      const result = await this.qdrantClient.search(this.COLLECTION_NAME, {
-        vector: embedding,
-        with_payload: true,
-      });
+    try{
+    await this.ensureCollectionExists(); 
+    const result = await this.qdrantClient.search(this.COLLECTION_NAME, {
+      vector: embedding,
+      with_payload: true
+    });
 
-      return result.map(item => item.payload?.text as string ?? '');
-    } catch (error) {
-      throw error;
-    }
+    return result.map(item => item.payload?.text as string ?? '');
   }
+  catch (error) {
+  throw error;
+  }
+}
 
   async embed() {
-    const containerName = process.env.BLOB_CONTAINER || '';
+    
+    const containerName = process.env.BLOB_CONTAINER|| ''; 
     const blobName = process.env.BLOB_NAME || '';
     const fileContent = await this.azureBlobService.downloadFileAsString(containerName, blobName);
     const chunks = this.splitTextWithOverlap(fileContent);
     const points: { id: number, vector: number[], payload: { text: string } }[] = [];
-
     for (const chunk of chunks) {
       const response: number[] = await this.getEmbeddings(chunk);
       points.push({
@@ -43,11 +46,10 @@ export class EmbedService {
         vector: response,
         payload: {
           text: chunk,
-        },
-      });
+        }
+      })
     }
-
-    await this.ensureCollectionExists();
+    await this.ensureCollectionExists(); 
     await this.uploadToQdrant(points);
   }
 
@@ -61,27 +63,27 @@ export class EmbedService {
         vectors: {
           size: 1536,
           distance: 'Dot',
-        },
+        }
       });
     }
   }
 
   uploadToQdrant(points: any): Promise<any> {
-    return this.qdrantClient.upsert(this.COLLECTION_NAME, { points });
+    return this.qdrantClient.upsert(this.COLLECTION_NAME, { points })
   }
 
   async getEmbeddings(text: string): Promise<number[]> {
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_ID,
+      apiKey: process.env.OPENAI_ID, 
     });
 
     const response = await openai.embeddings.create({
-      model: 'text-embedding-ada-002',
-      input: text,
+      model: 'text-embedding-ada-002', 
+      input: text
     });
 
     return response.data[0].embedding;
-  }
+  };
 
   splitTextWithOverlap(
     text: string,
@@ -89,8 +91,8 @@ export class EmbedService {
     overlap: number = 50
   ): string[] {
     const chunks: string[] = [];
-    let start = 0;
 
+    let start = 0;
     while (start < text.length) {
       const end = Math.min(start + chunkSize, text.length);
       const chunk = text.slice(start, end);
@@ -101,3 +103,5 @@ export class EmbedService {
     }
 
     return chunks;
+  }
+}
