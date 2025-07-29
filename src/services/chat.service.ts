@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OpenAI } from 'openai';
 import { EmbedService } from './embed.service';
 import { telemetryClient } from '../main'; 
+import { error } from 'console';
 
 @Injectable()
 export class ChatService {
@@ -14,19 +15,19 @@ export class ChatService {
   async sendMessageToAgent(message: string): Promise<string> {
   try {
     console.log('*** Message received at:', Date().toString());
-    telemetryClient.trackEvent({ name: "ChatMessageSent", properties: { message } });
+    this.performlogging("ChatMessageSent",message,false);
     const response: number[] = await this.embedService.getEmbeddings(message,this.openai);
     //console.log("embeding response", response)
     const responseEmbedding = await this.embedService.queryToVectorDB(response);
       return await this.getChatResponse(message, responseEmbedding.join(' '));
     } 
     catch (error) {
-      telemetryClient.trackException({exception: error, properties: { message } });
+      this.performlogging(error.exception.toString(), error.message + " - " + error.stack, true);
       throw error; 
     }
     finally {
       console.log('*** Message processed at:', Date().toString());
-      telemetryClient.trackEvent({ name: "ChatMessageProcessed", properties: { message } });
+      this.performlogging("ChatMessageProcessed",message,false);
     }
   }
 
@@ -47,6 +48,18 @@ export class ChatService {
     });
     console.log('Leaving getChatResponse:', Date().toString());
     return response.choices[0].message.content ?? 'No response from agent';
+  }
+  async performlogging(message: string,tagname:string,iserror:boolean): Promise<void> {
+    if (telemetryClient) {
+        if (iserror) {
+          console.log('*** ERROR:', tagname, message);
+          telemetryClient.trackException({ exception: new Error(tagname), properties: { message } });
+        } else {
+          console.log('*** LOG:', tagname, message);
+          telemetryClient.trackEvent({ name:tagname, properties: { message } });
+        }
+      
+    }
   }
 
 }
