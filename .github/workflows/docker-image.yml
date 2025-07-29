@@ -37,6 +37,7 @@ jobs:
             with:
               context: .
               push: true
+              no-cache: true
               tags: jgmejias/car-ecommerce-api:${{ steps.version.outputs.VERSION }}
               build-args: |
                 CLIENT_ID=${{ secrets.CLIENT_ID }}
