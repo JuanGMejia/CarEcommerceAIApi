@@ -20,7 +20,7 @@ export class ChatService {
     //console.log("embeding response", response)
     const responseEmbedding = await this.embedService.queryToVectorDB(response);
       return await this.getChatResponse(message, responseEmbedding.join(' '));
-    } 
+    }
     catch (error) {
       this.performlogging(error.exception.toString(), error.message + " - " + error.stack, true);
       throw error; 
@@ -37,7 +37,8 @@ export class ChatService {
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
       "messages": [
-        { "role": "system", "content": `You are a helpful, knowledgeable assistant representing a car e-commerce company.
+        {
+          "role": "system", "content": `You are a helpful, knowledgeable assistant representing a car e-commerce company.
                                           Use the following context to answer the user's question: ${context}.
                                           Be clear, concise, and professional.
                                           If the user's question is not related to our car e-commerce services, politely respond that this chat is intended only for questions about our car platform.
@@ -50,16 +51,14 @@ export class ChatService {
     return response.choices[0].message.content ?? 'No response from agent';
   }
   async performlogging(message: string,tagname:string,iserror:boolean): Promise<void> {
+    const loglabel = iserror ? 'Error' : 'Log';
     if (telemetryClient) {
-        if (iserror) {
-          console.log('*** ERROR:', tagname, message);
+        if (iserror) 
           telemetryClient.trackException({ exception: new Error(tagname), properties: { message } });
-        } else {
-          console.log('*** LOG:', tagname, message);
+        else
           telemetryClient.trackEvent({ name:tagname, properties: { message } });
-        }
-      
     }
+    console.log('***', loglabel, tagname, message);
   }
 
 }
