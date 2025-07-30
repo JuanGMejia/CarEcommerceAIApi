@@ -7,6 +7,7 @@ import { EmbedService } from './services/embed.service';
 import { ChatService } from './services/chat.service';
 import { ConfigModule } from '@nestjs/config';
 import { AzureBlobService } from './services/azure-blob.service';
+import { AppInsightsService } from './services/app-insights.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { AzureBlobService } from './services/azure-blob.service';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy, EmbedService, ChatService,AzureBlobService],
+  providers: [AppService, JwtStrategy, EmbedService, ChatService, AzureBlobService, AppInsightsService],
 })
 export class AppModule { }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { AzureBlobService } from './azure-blob.service';
 import OpenAI from 'openai';
@@ -6,7 +6,7 @@ import * as fs from 'fs';
 
 
 @Injectable()
-export class EmbedService {
+export class EmbedService implements OnModuleInit {
 
   qdrantClient = new QdrantClient({
     url: process.env.QDRANT_URL, // Ensure you have set this environment variable
@@ -17,7 +17,16 @@ export class EmbedService {
   readonly COLLECTION_NAME = 'Car-Ecommerce';
   constructor(private readonly azureBlobService: AzureBlobService) {}
 
-  
+  async onModuleInit() {
+      try {
+        console.log('Iniciando proceso de embeddings al arrancar el servicio...');
+        await this.embed();
+        console.log('Embeddings procesados exitosamente al iniciar el servicio');
+      } catch (error) {
+        console.error('Error al procesar embeddings al iniciar:', error.message);
+        // No lanzar el error para que el servicio pueda continuar
+      }
+  }
 
   async embed() {
     const openai = new OpenAI({
@@ -38,33 +47,22 @@ export class EmbedService {
         }
       })
     }
-    await this.ensureCollectionExists();
+    await this.createCollectionQdrant();
+    console.log('salio de actualizar coleccion');
     await this.uploadToQdrant(points);
   }
-  async ensureCollectionExists() {
-    const collections = await this.qdrantClient.getCollections();
-    const exists = collections.collections.some(
-      (col: any) => col.name === this.COLLECTION_NAME
-    );
-    if (exists) {
-      await this.qdrantClient.updateCollection(this.COLLECTION_NAME, {
-        vectors: {
-          size: 1536,
-          distance: 'Dot',
-        }
-      });
-    }
-    else 
-    {
+  async createCollectionQdrant() {
+      this.qdrantClient.deleteCollection(this.COLLECTION_NAME);
+      console.log('Creando coleccion');
       await this.qdrantClient.createCollection(this.COLLECTION_NAME, {
         vectors: {
           size: 1536,
           distance: 'Dot',
         }
       });
-    }
   }
   uploadToQdrant(points: any): Promise<any> {
+    console.log('Subiendo a qdrant');
     return this.qdrantClient.upsert(this.COLLECTION_NAME, { points })
   }
   async queryToVectorDB(embedding: number[]): Promise<string[]> {
