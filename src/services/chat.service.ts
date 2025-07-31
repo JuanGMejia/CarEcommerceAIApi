@@ -25,7 +25,12 @@ export class ChatService {
     }
     catch (error) {
       await this.performLogging(error.exception?.toString() || error.message, error.message + " - " + error.stack, true);
-      throw error; 
+      return  `⚠️ Lamentamos mucho las molestias 🙏
+                En este momento estamos experimentando dificultades para conectarnos al sistema y no podemos acceder a la información solicitada.
+                Estamos trabajando para resolverlo lo antes posible 🛠️
+                Agradecemos tu comprensión y paciencia. Si lo deseas, puedes dejarnos tus datos de contacto y te avisaremos tan pronto esté disponible.
+                Gracias por confiar en nosotros. Estamos aquí para ayudarte`;
+      //throw error; 
     }
     finally {
       console.log('*** Message processed at:', Date().toString());
@@ -56,7 +61,7 @@ export class ChatService {
     return response.choices[0].message.content ?? 'No response from agent';
   }
 
-  async performLogging(message: string, tagName: string, isError: boolean): Promise<void> {
+  async performLogging(tagName: string, message: string,  isError: boolean): Promise<void> {
     await this.appInsightsService.performLogging(message, tagName, isError);
   }
 }

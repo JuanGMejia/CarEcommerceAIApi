@@ -48,7 +48,7 @@ export class EmbedService implements OnModuleInit {
       })
     }
     await this.createCollectionQdrant();
-    console.log('salio de actualizar coleccion');
+    console.log('salio de Crear coleccion');
     await this.uploadToQdrant(points);
   }
   async createCollectionQdrant() {
@@ -89,8 +89,8 @@ export class EmbedService implements OnModuleInit {
 
   splitTextWithOverlap(
     text: string,
-    chunkSize: number = 500,
-    overlap: number = 80
+    chunkSize: number = 400,
+    overlap: number = 60
   ): string[] {
     const chunks: string[] = [];
 
