@@ -5,6 +5,10 @@ import { BearerStrategy } from 'passport-azure-ad';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(BearerStrategy, 'azure-ad') {
+  userInfo: {
+    name: string;
+    oid: string;
+  };
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({
@@ -14,8 +18,12 @@ export class JwtStrategy extends PassportStrategy(BearerStrategy, 'azure-ad') {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async validate(token: any): Promise<any> {
-    return token;
+  async validate(userInfo: {
+    name: string;
+    oid: string;
+  }): Promise<any> {
+    this.userInfo = userInfo;
+    return userInfo;
   }
 }
 
