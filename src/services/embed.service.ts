@@ -34,7 +34,7 @@ export class EmbedService implements OnModuleInit {
     });
     const containerName = process.env.BLOB_CONTAINER|| ''; 
     const blobName = process.env.BLOB_NAME || '';
-    const fileContent = await this.azureBlobService.downloadFileAsString(containerName, blobName); 
+    const fileContent = await this.azureBlobService.downloadFileAsString(containerName, blobName);   
     const chunks = this.splitTextWithOverlap(fileContent);
     const points: { id: number, vector: number[], payload: { text: string } }[] = [];
     for (const chunk of chunks) {
@@ -48,12 +48,22 @@ export class EmbedService implements OnModuleInit {
       })
     }
     await this.createCollectionQdrant();
-    console.log('salio de Crear coleccion');
     await this.uploadToQdrant(points);
   }
+  async deleteCollection(): Promise<void> {
+    try {
+      await this.qdrantClient.deleteCollection(this.COLLECTION_NAME, {
+        timeout: 30, // segundos
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
   async createCollectionQdrant() {
-      this.qdrantClient.deleteCollection(this.COLLECTION_NAME);
-      console.log('Creando coleccion');
+      await this.deleteCollection();
+      let exists = await this.qdrantClient.collectionExists(this.COLLECTION_NAME);
       await this.qdrantClient.createCollection(this.COLLECTION_NAME, {
         vectors: {
           size: 1536,
@@ -61,8 +71,8 @@ export class EmbedService implements OnModuleInit {
         }
       });
   }
+  
   uploadToQdrant(points: any): Promise<any> {
-    console.log('Subiendo a qdrant');
     return this.qdrantClient.upsert(this.COLLECTION_NAME, { points })
   }
   async queryToVectorDB(embedding: number[]): Promise<string[]> {

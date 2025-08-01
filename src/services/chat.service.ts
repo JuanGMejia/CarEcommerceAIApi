@@ -3,6 +3,9 @@ import { OpenAI } from 'openai';
 import { EmbedService } from './embed.service';
 import { AppInsightsService } from './app-insights.service';
 import { AzureBlobService } from './azure-blob.service';
+import { CacheService } from './cache.service';
+import { JwtStrategy } from './jwt.service';
+
 
 @Injectable()
 export class ChatService {
@@ -14,7 +17,9 @@ export class ChatService {
   constructor(
     private readonly embedService: EmbedService,
     private readonly appInsightsService: AppInsightsService,
-    private readonly azureBlobService: AzureBlobService
+    private readonly azureBlobService: AzureBlobService,
+    private readonly cacheService: CacheService,
+    private readonly jwt: JwtStrategy
   ) { }
 
   async sendMessageToAgent(message: string): Promise<string> {
@@ -42,23 +47,18 @@ export class ChatService {
 
   async getChatResponse(question: string, context: string): Promise<string> {
     const allMessages: any = await this.azureBlobService.getConversation();
+    console.log("Nombre de usuario", this.jwt.userInfo.name.split(' '));
+    const prompt=await this.getprompt() 
+                + "Important!: always use user's name:"+ this.jwt.userInfo.name.split(' ')+" to answer the question more personally and be formal with the name."
+                + "Context: " + context;
+                
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         ...allMessages,
         {
           role: 'system',
-          content: `You are a helpful, knowledgeable assistant representing a car e-commerce company.
-          Use the context and previous conversation to keep the naturally of the conversation to answer the user's question.
-          Context: ${context}
-          Be clear, concise, and professional.
-          If the user's question is not related to our car e-commerce services, politely respond that this chat is intended only for questions about our car platform.
-          Always respond in the same language the user uses.
-          Maintain a friendly tone prioritize clarity and build trust as an expert in car sales and services.
-          If you are replying with a list please use number 1, 2, 3, etc. to list the items, ensure you are giving a list, use emojis to make it more attractive.
-          Before you answer the question, please check if the question is related to the context, if not, politely respond that this chat is intended only for questions about our car platform.
-          Format the response using Markdown, with bold model names as section headers, and present features as bullet points. Use a friendly and professional tone, suitable for a customer-facing message.
-          `
+          content: `Instructions: ${prompt}`
         },
         { role: "user", content: question }
       ],
@@ -71,7 +71,18 @@ export class ChatService {
     await this.azureBlobService.uploadConversation([...allMessages, ...newConversation])
     return responseText;
   }
-
+  async getprompt()
+  {
+    const containerName = process.env.BLOB_CONTAINER|| ''; 
+    
+    let prompt=await this.cacheService.get("PromptFile");
+    if(!prompt)
+    {
+      prompt=await this.azureBlobService.downloadFileAsString(containerName,"Prompt.txt");
+      await this.cacheService.set("PromptFile",prompt);
+    }
+    return prompt;
+  }
   async performLogging(tagName: string, message: string, isError: boolean): Promise<void> {
     await this.appInsightsService.performLogging(message, tagName, isError);
   }

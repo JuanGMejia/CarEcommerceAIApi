@@ -8,6 +8,10 @@ import { ChatService } from './services/chat.service';
 import { ConfigModule } from '@nestjs/config';
 import { AzureBlobService } from './services/azure-blob.service';
 import { AppInsightsService } from './services/app-insights.service';
+import { CacheService } from './services/cache.service';
+import { CacheModule } from '@nestjs/cache-manager';
+
+
 
 @Module({
   imports: [
@@ -15,8 +19,15 @@ import { AppInsightsService } from './services/app-insights.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 3600 * 1000, 
+      max: 100, 
+    }),
+
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy, EmbedService, ChatService, AzureBlobService, AppInsightsService],
+  providers: [AppService, JwtStrategy, EmbedService, ChatService, AzureBlobService, AppInsightsService,CacheService],
+  exports: [CacheService],
 })
 export class AppModule { }

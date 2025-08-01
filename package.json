@@ -1,6 +1,6 @@
 {
   "name": "car-be",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "",
   "author": "",
   "private": true,
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.28.0",
+    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -29,6 +30,7 @@
     "@qdrant/js-client-rest": "^1.15.0",
     "applicationinsights": "^3.7.0",
     "axios": "^1.11.0",
+    "cache-manager": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "openai": "^5.10.2",
     "passport": "^0.7.0",
