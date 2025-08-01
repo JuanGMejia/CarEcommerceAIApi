@@ -22,7 +22,7 @@ This project follows a modular, service-oriented architecture using [NestJS](htt
 2. **Chat Endpoint**: Receives user messages, generates embeddings, retrieves relevant context from Qdrant, and responds using OpenAI's GPT model.
 3. **Embeddings**: Text data is chunked, embedded with OpenAI, and indexed in Qdrant for fast semantic search.
 4. **Conversation Storage**: User conversations are persisted in Azure Blob Storage for context and continuity.
-5. **Conversation Storage**: Prompt is downloaded from blob and stored in cache to optimize the response time.
+5. **Prompt Memory-Storage**: Prompt is downloaded from blob and stored in cache to optimize the response time.
 6. **Observability**: Application Insights logs events and errors for monitoring.
 
 ---
