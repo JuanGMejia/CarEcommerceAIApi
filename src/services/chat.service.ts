@@ -3,6 +3,7 @@ import { OpenAI } from 'openai';
 import { EmbedService } from './embed.service';
 import { AppInsightsService } from './app-insights.service';
 import { AzureBlobService } from './azure-blob.service';
+import { JwtStrategy } from './jwt.service';
 
 @Injectable()
 export class ChatService {
@@ -14,7 +15,8 @@ export class ChatService {
   constructor(
     private readonly embedService: EmbedService,
     private readonly appInsightsService: AppInsightsService,
-    private readonly azureBlobService: AzureBlobService
+    private readonly azureBlobService: AzureBlobService,
+    private readonly jwt: JwtStrategy
   ) { }
 
   async sendMessageToAgent(message: string): Promise<string> {
@@ -52,6 +54,7 @@ export class ChatService {
           Use the context and previous conversation to keep the naturally of the conversation to answer the user's question.
           Context: ${context}
           Be clear, concise, and professional.
+          Use user's name: ${this.jwt.userInfo.name.split(' ')} to answer the question more personally and be formal with the name.
           If the user's question is not related to our car e-commerce services, politely respond that this chat is intended only for questions about our car platform.
           Always respond in the same language the user uses.
           Maintain a friendly tone prioritize clarity and build trust as an expert in car sales and services.
